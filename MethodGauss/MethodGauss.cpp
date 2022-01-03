@@ -66,6 +66,7 @@ float** determinantAndChange(float** A, float** E, int n)//определите�
 		{
 			if (A[i][j] != 0)
 				flag = false;
+			break;
 		}
 		if (flag)
 		{
@@ -104,20 +105,19 @@ float** determinantAndChange(float** A, float** E, int n)//определите�
 
 		float t = A[i][i];
 		det *= t;
-		for (int j = 0; j < n; j++)
+		for (int j = i + 1; j < n; j++)
 		{
 			A[i][j] /= t;
 			E[i][j] /= t;
 		}
-		for (int j = 0; j < n; j++)
+		for (int j = i + 1 ; j < n; j++)
 		{
 			if (i == j)
 				continue;
-			float d1 = A[j][i];
-			for (int k = 0; k < n; k++)
+			for (int k = i + 1; k < n; k++)
 			{
-				A[j][k] -= A[i][k] * d1;
-				E[j][k] -= E[i][k] * d1;
+				A[j][k] -= A[i][k] * A[j][i];
+				E[j][k] -= E[i][k] * A[j][i];
 			}
 		}
 	}
