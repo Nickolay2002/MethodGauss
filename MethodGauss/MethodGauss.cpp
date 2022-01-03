@@ -1,7 +1,47 @@
 ﻿#include<iostream>
 #include<locale>
 #include<time.h>
+#include <format>
+
 using namespace std;
+
+
+/// <summary>
+/// fill given matrix with random values
+/// </summary>
+/// <param name="matr">given matrix</param>
+/// <param name="n"></param>
+/// <param name="m"></param>
+void fillingMatrixRandom(float** matr, int n, int m)//заполение матриц А и В рандомными числами
+{
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < m; j++)
+		{
+			matr[i][j] = rand() % 100 - 50;
+		}
+	}
+}
+
+void customFilling(float** matr, int n, char matrixName)
+{
+	printf("Введите матрицу %c :\n", matrixName);
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			printf("%c[%d][%d] = ", matrixName, i, j);
+			scanf_s("%f", &matr[i][j]);
+		}
+	}
+}
+
+void fillingMatrixCopy(float** matr, float** matr1, int n, int m) //копии матриц(заполнение)
+{
+	for (int i = 0; i < n; i++)
+		for (int j = 0; j < m; j++)
+			matr1[i][j] = matr[i][j];
+}
 
 void showMatrix(float** matr, int n, int m)//вывод матрицы 
 {
@@ -14,6 +54,75 @@ void showMatrix(float** matr, int n, int m)//вывод матрицы
 		printf("\n");
 	}
 	printf("\n");
+}
+
+float** determinantAndChange(float** A, float** E, int n)//определитель и преобразования
+{
+	bool flag = true;
+	for (int i = 0; i < n; i++) //проверка на нулевые столбцы
+	{
+		flag = true;
+		for (int j = 0; j < n; j++)
+		{
+			if (A[i][j] != 0)
+				flag = false;
+		}
+		if (flag)
+		{
+			printf("Матрица вырожденная, определитель равен 0!");
+			return 0;
+		}
+	}
+	float det = 1; //преобразование А и вычисление определителя
+	for (int i = 0; i < n; i++)
+	{
+		int imax = i;
+		for (int j = i + 1; j < n; j++)
+			if (fabs(A[j][i]) > fabs(A[imax][i]))
+				imax = j;
+
+		float eps = 0.0001;
+		if (fabs(A[imax][i]) < eps)
+		{
+			printf("Матрица вырожденная, определитель равен 0!");
+			return 0;
+		}
+		if (i != imax)
+		{
+			det *= -1;
+			for (int j = 0; j < n; j++)
+			{
+				float temp = A[i][j];
+				A[i][j] = A[imax][j];
+				A[imax][j] = temp;
+
+				temp = E[i][j];
+				E[i][j] = E[imax][j];
+				E[imax][j] = temp;
+			}
+		}
+
+		float t = A[i][i];
+		det *= t;
+		for (int j = 0; j < n; j++)
+		{
+			A[i][j] /= t;
+			E[i][j] /= t;
+		}
+		for (int j = 0; j < n; j++)
+		{
+			if (i == j)
+				continue;
+			float d1 = A[j][i];
+			for (int k = 0; k < n; k++)
+			{
+				A[j][k] -= A[i][k] * d1;
+				E[j][k] -= E[i][k] * d1;
+			}
+		}
+	}
+	printf("%6.2f\n\n", det);
+
 }
 
 float** multiplicationMatrix(float** matr1, int n1, int m1, float** matr2, int n2, int m2) //умножение матриц
@@ -105,12 +214,17 @@ int main()
 	float** cB = new float* [n];//копия В
 	for (int i = 0; i < n; i++)
 		cB[i] = new float[m];
+	float** X = new float* [n];// создание X
+	for (int i = 0; i < n; i++)
+		X[i] = new float[m];
+	float** T = new float* [n];// создание T
+	for (int i = 0; i < n; i++)
+		T[i] = new float[m];
 
 	float** E = new float* [n];// создание Единичной
 	for (int i = 0; i < n; i++)
+	{
 		E[i] = new float[n];
-	for (int i = 0; i < n; i++)//заполнение Единичной
-	{
 		for (int j = 0; j < n; j++)
 		{
 			if (i == j)
@@ -120,165 +234,45 @@ int main()
 		}
 	}
 
-	switch (chooseA)//заполнение А 
+	if (chooseA == 1)
 	{
-	case 1://вручную
-		printf("Введите матрицу A :\n");
-		for (int i = 0; i < n; i++)
-		{
-			for (int j = 0; j < n; j++)
-			{
-				printf("A["); printf("%d", i); printf("]["); printf("%d", j); printf("] = ");
-				scanf_s("%f", &A[i][j]);
-			}
-		}
-		break;
-	case 2://случайно
-		for (int i = 0; i < n; i++)
-		{
-			for (int j = 0; j < n; j++)
-			{
-				A[i][j] = rand() % 100 - 50;
-			}
-		}
-		break;
-	default:
-		printf("Ошибка! Попробуйте еще раз.");
-		return 0;
+		customFilling(A, n, 'A');
 	}
-	switch (chooseB)//заполнение В
+	else
 	{
-	case 1://вручную
-		printf("Введите матрицу B :\n");
-		for (int i = 0; i < n; i++)
-		{
-			for (int j = 0; j < m; j++)
-			{
-				printf("A["); printf("%d", i); printf("]["); printf("%d", j); printf("] = ");
-				scanf_s("%f", &B[i][j]);
-			}
-		}
-		break;
-	case 2://случайно
-		for (int i = 0; i < n; i++)
-		{
-			for (int j = 0; j < m; j++)
-			{
-				B[i][j] = rand() % 100 - 50;
-			}
-		}
-		break;
-	default:
-		printf("Ошибка! Попробуйте еще раз.");
-		return 0;
-
+		fillingMatrixRandom(A, n, n);
 	}
-	for (int i = 0; i < n; i++)
+	if (chooseB == 1)
 	{
-		for (int j = 0; j < n; j++)
-		{
-			if (i == j)
-				E[i][j] = 1;
-			else
-				E[i][j] = 0;
-		}
+		customFilling(B, n, 'B');
 	}
-	for (int i = 0; i < n; i++) //копии матриц(заполнение)
-		for (int j = 0; j < n; j++)
-			cA[i][j] = A[i][j];
-	for (int i = 0; i < n; i++)
-		for (int j = 0; j < m; j++)
-			cB[i][j] = B[i][j];
+	else
+	{
+		fillingMatrixRandom(B, n, m);
+	}
+	fillingMatrixCopy(A, cA, n, n);
+	fillingMatrixCopy(B, cB, n, m);
 	printf("матрица A =\n");
 	showMatrix(cA, n, n);
 	printf("матрица B =\n");
 	showMatrix(cB, n, m);
-	bool flag = true;
-	for (int i = 0; i < n; i++) //проверка на нулевые столбцы
-	{
-		flag = true;
-		for (int j = 0; j < n; j++)
-		{
-			if (A[i][j] != 0)
-				flag = false;
-		}
-		if (flag)
-		{
-			printf("Матрица вырожденная, определитель равен 0!");
-			return 0;
-		}
-	}
-	float det = 1; //преобразование А и вычисление определителя
-	for (int i = 0; i < n; i++)
-	{
-		int imax = i;
-		for (int j = i + 1; j < n; j++)
-			if (fabs(A[j][i]) > fabs(A[imax][i]))
-				imax = j;
-
-		float eps = 0.0001;
-		if (fabs(A[imax][i]) < eps)
-		{
-			printf("Матрица вырожденная, определитель равен 0!");
-			return 0;
-		}
-		if (i != imax)
-		{
-			det *= -1;
-			for (int j = 0; j < n; j++)
-			{
-				float temp = A[i][j];
-				A[i][j] = A[imax][j];
-				A[imax][j] = temp;
-
-				temp = E[i][j];
-				E[i][j] = E[imax][j];
-				E[imax][j] = temp;
-			}
-		}
-
-		float t = A[i][i];
-		det *= t;
-		for (int j = 0; j < n; j++)
-		{
-			A[i][j] /= t;
-			E[i][j] /= t;
-		}
-		for (int j = 0; j < n; j++)
-		{
-			if (i == j)
-				continue;
-			float d1 = A[j][i];
-			for (int k = 0; k < n; k++)
-			{
-				A[j][k] -= A[i][k] * d1;
-				E[j][k] -= E[i][k] * d1;
-			}
-		}
-	}
 	printf("det(A) =");
-	printf("%6.2f\n\n", det);
+	determinantAndChange(A, E, n);
 	printf("A^(-1) = \n");
 	showMatrix(E, n, n);
-	printf("X=(A)^-1 * B\n");
+	printf("X=A^(-1) * B\n");
 	printf("X=\n");
-	float** X = new float* [n];//создание X
-	for (int i = 0; i < n; i++)
-		X[i] = new float[m];
 	X = multiplicationMatrix(E, n, n, B, n, m);
 	showMatrix(X, n, m);
 	printf("Проверка:\n\n");
 	printf("A*X =\n");
 	showMatrix(multiplicationMatrix(cA, n, n, X, n, m), n, m);
 	printf("A*X - B =\n");
-	float** T = new float* [n];
-	for (int i = 0; i < n; i++)
-		T[i] = new float[n];
 	T = multiplicationMatrix(cA, n, n, X, n, m);
 	sumMatrix(T, n, m, B, n, m);
-	printf("A*(A)^-1=\n");
+	printf("A*A^(-1)=\n");
 	showMatrix(multiplicationMatrix(cA, n, n, E, n, n), n, n);
-	printf("(A)^-1*A =\n");
+	printf("A^(-1)*A =\n");
 	showMatrix(multiplicationMatrix(E, n, n, cA, n, n), n, n);
 	for (int i = 0; i < n; i++)
 	{
