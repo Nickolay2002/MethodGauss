@@ -45,6 +45,7 @@ void fillingMatrixCopy(float** matr, float** matr1, int n, int m) //копии �
 
 void showMatrix(float** matr, int n, int m)//вывод матрицы 
 {
+	printf("\n");
 	for (int i = 0; i < n; i++)
 	{
 		for (int j = 0; j < m; j++)
@@ -102,25 +103,72 @@ float** determinantAndChange(float** A, float** E, int n)//определите�
 				E[imax][j] = temp;
 			}
 		}
-
+		showMatrix(A, n, n);
+		showMatrix(E, n, n);
 		float t = A[i][i];
 		det *= t;
-		for (int j = i + 1; j < n; j++)
+		for (int k = 0; k < n; k++)
 		{
-			A[i][j] /= t;
-			E[i][j] /= t;
+			A[i][k] /= t;
+			E[i][k] /= t;
 		}
-		for (int j = i + 1 ; j < n; j++)
+		printf("coef:\n");
+		showMatrix(A, n, n);
+		showMatrix(E, n, n);
+		for (int k = i + 1; k < n; k++)
 		{
-			if (i == j)
-				continue;
-			for (int k = i + 1; k < n; k++)
+			t = A[k][i];
+			for (int j = i; j < n; j++)
 			{
-				A[j][k] -= A[i][k] * A[j][i];
-				E[j][k] -= E[i][k] * A[j][i];
+				A[k][j] -= A[i][j] * t;
+			}
+			for (int j = 0; j < n; j++)
+			{
+				E[k][j] -= E[i][j] * t;
+			}
+			printf("diff:\n");
+			showMatrix(A, n, n);
+			showMatrix(E, n, n);
+		}
+	}
+	printf("right----------\n");
+	for (int i = n - 1; i > 0; i--)
+	{
+		cout << i << endl;
+		showMatrix(A, n, n);
+		for (int k = i - 1; k >= 0; k--)
+		{
+			float t = A[i][i];
+			for (int k = i - 1; k >= 0; k--)
+			{
+				t = A[k][i];
+				for (int j = i; j < n; j++)
+				{
+					A[k][j] -= A[i][j] * t;
+				}
+				for (int j = 0; j < n; j++)
+				{
+					E[k][j] -= E[i][j] * t;
+				}
+				printf("diff:\n");
+				showMatrix(A, n, n);
+				showMatrix(E, n, n);
 			}
 		}
 	}
+	showMatrix(A, n, n);
+	showMatrix(E, n, n);
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			E[i][j] /= A[i][i];
+		}
+		A[i][i] /= A[i][i];
+	}
+	showMatrix(A, n, n);
+	showMatrix(E, n, n);
+
 	printf("%6.2f\n\n", det);
 
 }
@@ -151,7 +199,7 @@ float** multiplicationMatrix(float** matr1, int n1, int m1, float** matr2, int n
 
 }
 
-void sumMatrix(float** matr1, int n1, int m1, float** matr2, int n2, int m2)// сложение матриц
+void sumMatrix(float** matr1, int n1, int m1, float** matr2, int n2, int m2, int k = 1)// сложение матриц
 {
 	if ((n1 != n2) || (m1 != m2))
 		printf("Ошибка!Размеры матриц не совпадают!");
@@ -166,7 +214,7 @@ void sumMatrix(float** matr1, int n1, int m1, float** matr2, int n2, int m2)// �
 			for (int j = 0; j < m1; j++)
 			{
 				sum[i][j] = 0;
-				sum[i][j] = matr1[i][j] - matr2[i][j];
+				sum[i][j] = matr1[i][j] - matr2[i][j] * k;
 				if (fabs(sum[i][j]) < eps)
 					sum[i][j] = 0;
 				printf("%6.2f\t", sum[i][j]);
